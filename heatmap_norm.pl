@@ -21,10 +21,19 @@ while($i=<NUC>){
 	print STDERR "$peak\n";
 	$chr=$temp[0];
 	$chr=~s/^chr//;
+	$ct=0;$sum=0;
 	for($m=$peak-$window;$m<=$peak+$window;$m+=$step){
-		$val=0;
-		$val = $read{$chr}{$m} if(exists $read{$chr}{$m});
-		print "$val\t";
+		if(exists $read{$chr}{$m} && $read{$chr}{$m}>$sum){
+			$sum = $read{$chr}{$m};
+			$ct++;
+		}
+	}
+	if($ct!=0){
+		for($m=$peak-$window;$m<=$peak+$window;$m+=$step){
+			$val=1;
+			$val = $read{$chr}{$m}/$sum if(exists $read{$chr}{$m});
+			print "$val\t";
+		}
 	}
 	print "\n";
 }

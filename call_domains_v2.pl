@@ -49,34 +49,60 @@ foreach $i ( keys(%pdread) ){
 	$val=0;
 	$ct=0;
 	$near_cutoff = 3*$ARGV[4]/4;
+	$in_between_flag=-1;
 	foreach $j ( sort {$a <=> $b} keys(%{$pdread{$i}})){
 		if($pdread{$i}{$j} > $ave_cutoff && $l2read{$i}{$j} > $l2_cutoff){
 			#$temp = $j+10;
 			#print FILE "$i\t$j\t$temp\n";
 			if($prev==-1){
-				$start=$j;
+				$start=$j; #starting new domain for first time on the chromosome
 				$prev=$j;
 				#push(@tarray,$l2read{$i}{$j});
 				$val+=$l2read{$i}{$j};
 				$ct++;
+				print STDERR "Con 1 $prev $start\n";
 			}elsif($prev>($j-$near_cutoff) && $prev<$j){
 				$val+=$l2read{$i}{$j};
 				$ct++;
 				$prev=$j;
-				$flag=1;
+				$flag=1; # Start new domain
+				$in_between_flag=-1;
+				print STDERR "Con 2 $prev $start\n";a
 			}else{
 				$width = $prev - $start;
-				if($flag==1 && $width >= $ARGV[4]){
+				print STDERR "Con 3 $j $prev $start $in_between_flag $width";
+				if($flag==1 && $width >= $ARGV[4] && $in_between_flag!=1){ #if the previous domain contains at least two points in essence
 					$val/=$ct if($ct>0);
 					print "chr$i\t$start\t$prev\t$width\t$val\n";
 					$flag=0;
 					$val=0;
 					$ct=0;
+					$in_between_flag=-1;
+					print STDERR "\tCon 3-1";
+				}elsif($in_between_flag==1){
+					$in_between_flag=-1;
+					$val+=$l2read{$i}{$j};
+					$ct++;
+					$prev=$j;
+					print STDERR "\tCon 3-2";
+					goto HERE;
 				}
+				$flag=0;
+				$start=$j; #Starting new domain
 				$prev=$j;
-				$start=$j;
+				$val=$l2read{$i}{$j};
+				$ct=1;
+				$in_between_flag=-1;
+				HERE:
+				print STDERR "\n";
 			}
-		} 
+		}elsif($l2read{$i}{$j}>1 && $pdread{$i}{$j}>$gw_med && $in_between_flag!=0){
+			$in_between_flag=1;
+			print STDERR "Con 4 $j\n";
+		}else{
+			$in_between_flag=0;
+			#print STDERR "Con 5\n";
+		}
 	} 
 }
 #close(FILE);
