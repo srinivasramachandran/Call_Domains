@@ -22,6 +22,7 @@ while(chomp($line=<FILE>)){
 	$chr =~s/^chr//;
 	$st  = int( ($temp[1]/$step_size) - 0.5)*$step_size;
 	$en  = int( ($temp[2]/$step_size) + 0.5)*$step_size;
+	print "Chr:$chr $st $en\n";
 	for($i=$st;$i<=$en;$i+=$step_size){	
 		$wig{$chr}{$i}=$read{$chr}{$i} if(exists $read{$chr}{$i});
 	}

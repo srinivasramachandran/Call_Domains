@@ -16,14 +16,25 @@ $tread = &ngs::readwig($ARGV[1]);
 
 print STDERR "Done reading wigs\n";
 
+######### PD MEDIAN ##########################
+foreach $i (keys(%pdread)){
+	push(@tval_pd,values(%{$pdread{$i}}));
+}
+@val_pd = sort {$a <=> $b} @tval_pd;
+$pos = int( ($#val_pd+1)/2);
+$pd_median = $val_pd[$pos];
+##############################################
+
+######## IN MEDIAN ###########################
 foreach $i (keys(%inread)){
 	push(@tval_in,values(%{$inread{$i}}));
 }
 @val_in = sort {$a <=> $b} @tval_in;
 $pos = int( ($#val_in+1)/2);
 $in_median = $val_in[$pos];
+##############################################
 
-print STDERR "Finished median\n";
+print STDERR "Finished median: INPUT: $in_median PD: $pd_median\n";
 
 $win=$ARGV[2]; #1000 usually
 $step=$ARGV[4];
@@ -34,12 +45,16 @@ open(OUT1,">PD.$ARGV[3]") || die "OUT PD $!\n";
 open(OUT2,">LOG2.$ARGV[3]") || die "OUT LOG2 $!\n";
 
 
+
 foreach $i ( keys(%pdread) ){
 	print STDERR "$i\n";
 	print OUT1 "variableStep  chrom=chr$i span=$incr\n";
 	print OUT2 "variableStep  chrom=chr$i span=$incr\n";
 	$prev=-1*$incr;
-	foreach $j ( sort {$a <=> $b} keys(%{$pdread{$i}})){
+	@sorted_pdread = sort {$a <=> $b} keys(%{$pdread{$i}});
+	$lo = $sorted_pdread[0];
+	$hi = $sorted_pdread[$#sorted_pdread];
+	for($j=$lo;$j<=$hi;$j+=$step){
 		if($j-$prev>=$incr){
 			$in_count=0;
 			$pd_count=0;
